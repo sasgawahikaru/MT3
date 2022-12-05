@@ -54,10 +54,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	Vector3 start(-100.0f, 0.0f, 0.0f);
 	Vector3 end(+100.0f, 0.0f, 0.0f);
 
-//	Vector3 p0(-100.0f, 0.0f, 0.0f);
-//	Vector3 p1(   0.0f, 0.0f, 100.0f);
-	Vector3 p2( -50.0f,  50.0f, +50.0f);
-	Vector3 p3( +50.0f, -30.0f, -50.0f);
+	//	Vector3 p0(-100.0f, 0.0f, 0.0f);
+	//	Vector3 p1(   0.0f, 0.0f, 100.0f);
+	Vector3 p2(-50.0f, 50.0f, +50.0f);
+	Vector3 p3(+50.0f, -30.0f, -50.0f);
 
 	std::vector<Vector3> points{ start,start,p2,p3,end,end };
 
@@ -119,7 +119,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		{
 			if (startIndex < points.size() - 3)
 			{
-
+				start -= p2;
 				timeRate -= 1.0f;
 				startCount = GetNowHiPerformanceCount();
 			}
@@ -127,22 +127,22 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			{
 				timeRate = 1.0f;
 			}
-			position = splinePosition();
+			position = splinePosition(points, startIndex, elapsedTime);
 		}
-//		Vector3 a = lerp(p0,p1,timeRate);
-//		Vector3 b = lerp(p1,p2,timeRate);
+		//		Vector3 a = lerp(p0,p1,timeRate);
+		//		Vector3 b = lerp(p1,p2,timeRate);
 
-//		position = lerp(a,b,timeRate);
+		//		position = lerp(a,b,timeRate);
 
-		//position = lerp(start, end, timeRate);
+				//position = lerp(start, end, timeRate);
 
-		// •`‰æˆ—
+				// •`‰æˆ—
 		ClearDrawScreen();
 		DrawSphere3D(start, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		DrawSphere3D(p2,    2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		DrawSphere3D(p3,    2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		DrawSphere3D(end,   2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		DrawSphere3D(position,   5.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), TRUE);
+		DrawSphere3D(p2, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
+		DrawSphere3D(p3, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
+		DrawSphere3D(end, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
+		DrawSphere3D(position, 5.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), TRUE);
 
 		//		DrawFormatString(0, 0, GetColor(255, 255, 255), "%d,%d", position);
 		DrawFormatString(0, 0, GetColor(255, 255, 255), "position(%5.1f,%5.1f,%5.1f)", position.x, position.y, position.z);
@@ -157,27 +157,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		DrawFormatString(0, 160, GetColor(255, 255, 255), "end (% 6.1f, % 6.1f, % 6.1f)", end.x, end.y, end.z);
 
 		//DrawSphere3D(position, 80.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), TRUE);
-
-		Vector3 splinePosition(const std::vector<Vector3>&points, size_t startIndex, float t)
-		{
-			size_t n = points.size() - 2;
-
-			if (startIndex > n)return points[n];
-			if (startIndex < 1)return points[1];
-
-			Vector3 p0 = points[startIndex - 1];
-			Vector3 p1 = points[startIndex];
-			Vector3 p2 = points[startIndex + 1];
-			Vector3 p3 = points[startIndex + 2];
-			Vector3 position = ;
-
-			return position;
-		}
 		ScreenFlip();
 	}
 	// Dxƒ‰ƒCƒuƒ‰ƒŠI—¹ˆ—
 	DxLib_End();
-
 	// ³íI—¹
 	return 0;
 }
@@ -201,4 +184,21 @@ int DrawLine3D(const Vector3& Pos1, const Vector3& Pos2, const unsigned int Colo
 	VECTOR p2 = { Pos2.x,Pos2.y,Pos2.z };
 
 	return DrawLine3D(p1, p2, Color);
+}
+Vector3 splinePosition(const std::vector<Vector3>& points, size_t startIndex, float t)
+{
+	size_t n = points.size() - 2;
+
+	if (startIndex > n)return points[n];
+	if (startIndex < 1)return points[1];
+
+	Vector3 p0 = points[startIndex - 1];
+	Vector3 p1 = points[startIndex];
+	Vector3 p2 = points[startIndex + 1];
+	Vector3 p3 = points[startIndex + 2];
+	Vector3 position = { p1 + (-p0 + p2)+
+						(p0-p1+p2-p3)+
+						(-p0+p1-p2+p3)};
+
+	return position;
 }
