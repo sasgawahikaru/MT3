@@ -1,15 +1,13 @@
 #include <DxLib.h>
-#include <cstdlib>
-#include <vector>
+//#include "Vector2.h"
 #include "Vector3.h"
-
-//Vector3 splinePosition(const std::vector<Vector3>& points, size_t startIndex, float t);
-
+#include<time.h>
+#include<functional>
 //int DrawCircle(Vector2 vec, int r, unsigned int color);
-//int DrawSphere3D(const Vector3& CenterPos, const float r, const int DivNum,
-//	const unsigned int DifColor, const unsigned int SpcColor, const int FillFlag);
+int DrawSphere3D(const Vector3& CenterPos, const float r, const int DivNum,
+	const unsigned int DifColor, const unsigned int SpcColor, const int FillFlag);
 
-//int DrawLine3D(const Vector3& Pos1, Vector3& Pos2, const unsigned int color);
+int DrawLine3D(const Vector3& Pos1, Vector3& Pos2, const unsigned int color);
 // ウィンドウのタイトルに表示する文字列
 const char TITLE[] = "xx2x_xx_ナマエ: タイトル";
 
@@ -18,7 +16,11 @@ const int WIN_WIDTH = 600;
 
 // ウィンドウ縦幅
 const int WIN_HEIGHT = 400;
+	// 最新のキーボード情報用
+	char keys[256] = { 0 };
 
+	// 1ループ(フレーム)前のキーボード情報
+	char oldkeys[256] = { 0 };
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine,
 	_In_ int nCmdShow) {
 
@@ -39,61 +41,46 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	SetUseZBufferFlag(TRUE);
 	SetWriteZBufferFlag(TRUE);
 
+	int okimono=LoadGraph("tekkyuu.png");
+//	int umi = LoadGraph("umi.png");
+
 	SetCameraNearFar(1.0f, 1000.0f);
 	SetCameraScreenCenter(WindowWidth / 2.0f, WindowHeight / 2.0f);
 	SetCameraPositionAndTargetAndUpVec(
-		VGet(-20.0f, 20.0f, -200.0f),
+		VGet(0.0f, 180.0f, 0.0f),
 		VGet(0.0f, 0.0f, 0.0f),
-		VGet(0.0f, 1.0f, 0.0f));
-	struct Quaternion {
-		float x;
-		float y;
-		float z;
-		float w;
-	};
+		VGet(0.0f, 0.0f, 1.0f));
+	srand((unsigned int)time(NULL));
+	int num = rand() % 150;
+	int num2 = rand() % 50+200;
 
-	Quaternion Multiply(const Quaternion& lhs, const Quaternion& rhs);
+	long long startCount = 0;
+	long long nowCount = 0;
+	long long elapsedCount = 0;
 
-	Quaternion IdentityQuaternion();
+	Vector3 start(-100.0f, 0, 0);
+	Vector3 end(+100.0f, 0, 0);
+	if (keys[KEY_INPUT_R] == 1) {
+		srand((unsigned int)time(NULL));
 
-	Quaternion Conjugate(const Quaternion& quaternion);
+//		num = power();
+	}
+	Vector3 p0(-150.0f, 0.0f, 0.0f);
+	Vector3 p1(0.0f, 0.0f, num2);
+	Vector3 p2(num, 0.0f, 0.0f);
+	
+	//	Vector3 p3( 100.0f, 0.0f, 0.0f);
 
-	float Norm(const Quaternion& quaternion);
+	float maxTime = 5.0f;
+	float timeRate;
 
-	Quaternion Normalize(const Quaternion& quateernion);
+	Vector3 position;
 
-	Quaternion Inverse(const Quaternion& quaternion);
+	startCount = GetNowHiPerformanceCount();
 
-	Quaternion q1 = { 2.0f,3.0f,4.0f,1.0f };
-	Quaternion q2 = { 2.0f,3.0f,4.0f,1.0f };
-	Quaternion identity = IdentityQuaternion();
-	Quaternion conj = Conjugate(q1);
-	Quaternion inv = Inverse(q1);
-	Quaternion normal = Normalize(q1);
-	Quaternion mul1 = Multiply(q1, q2);
-	Quaternion mul2 = Multiply(q1, q2);
-	float norm = Norm(q1);
 
-	//long long startCount = 0;
-	//long long nowCount = 0;
-	//long long elapsedCount = 0;
-
-	//Vector3 start(-100.0f, 0.0f, 0.0f);
-	//Vector3 end(+100.0f, 0.0f, 0.0f);
-
-	////	Vector3 p0(-100.0f, 0.0f, 0.0f);
-	////	Vector3 p1(   0.0f, 0.0f, 100.0f);
-	//Vector3 p2(-50.0f, 50.0f, +50.0f);
-	//Vector3 p3(+50.0f, -30.0f, -50.0f);
-
-	//std::vector<Vector3> points{ start,start,p2,p3,end,end };
-
-	//float maxTime = 5.0f;
-	//float timeRate;
-
-	//Vector3 position;
-
-	//startCount = GetNowHiPerformanceCount();
+	//Vector3 position(0, 0, 0);
+	//Vector3 velocity(0.0f, 0.0f, 0.5f);
 
 
 	// タイトルを変更
@@ -108,13 +95,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// ゲームループで使う変数の宣言
 
 
-	// 最新のキーボード情報用
-	char keys[256] = { 0 };
 
-	// 1ループ(フレーム)前のキーボード情報
-	char oldkeys[256] = { 0 };
-
-	size_t startIndex = 1;
 
 	// ゲームループ
 	while (ProcessMessage() == 0 && CheckHitKey(KEY_INPUT_ESCAPE) == 0)
@@ -128,104 +109,66 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 		// 更新処理
 		//position += velocity;
 
-		//if (CheckHitKey(KEY_INPUT_R))
-		//{
-		//	startCount = GetNowHiPerformanceCount();
-		//	startIndex = 1;
-		//}
+		if (keys[KEY_INPUT_SPACE] == 0) {
 
-		//nowCount = GetNowHiPerformanceCount();
-		//elapsedCount = nowCount - startCount;
-		//float elapsedTime = static_cast<float>(elapsedCount) / 1'000'000.0f;
+			startCount = GetNowHiPerformanceCount();
+		}
+		if (keys[KEY_INPUT_SPACE] == 1) {
+			nowCount = GetNowHiPerformanceCount();
+			elapsedCount = nowCount - startCount;
+			float elapsedTime = static_cast<float>(elapsedCount) / 1'000'000.0f;
 
-		////timeRate = min(elapsedTime / maxTime, 1.0f);
+			timeRate = min(elapsedTime / maxTime, 1.0f);
 
-		//timeRate = elapsedTime / maxTime;
+			Vector3 a = lerp(p0, p1, timeRate);
+			Vector3 b = lerp(p1, p2, timeRate);
 
-		//if (timeRate >= 1.0f)
-		//{
-		//	if (startIndex < points.size() - 3)
-		//	{
-		//		start -= p2;
-		//		timeRate -= 1.0f;
-		//		startCount = GetNowHiPerformanceCount();
-		//	}
-		//	else
-		//	{
-		//		timeRate = 1.0f;
-		//	}
-		//	position = splinePosition(points, startIndex, elapsedTime);
-		//}
-		//		Vector3 a = lerp(p0,p1,timeRate);
-		//		Vector3 b = lerp(p1,p2,timeRate);
+			position = lerp(a, b, timeRate);
+		}
+		//position = lerp(start, end, timeRate);
 
-		//		position = lerp(a,b,timeRate);
-
-				//position = lerp(start, end, timeRate);
-
-				//// 描画処理
-		//ClearDrawScreen();
-		//DrawSphere3D(start, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		//DrawSphere3D(p2, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		//DrawSphere3D(p3, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		//DrawSphere3D(end, 2.0f, 32, GetColor(0, 255, 0), GetColor(255, 255, 255), TRUE);
-		//DrawSphere3D(position, 5.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), TRUE);
-
-		////		DrawFormatString(0, 0, GetColor(255, 255, 255), "%d,%d", position);
-		//DrawFormatString(0, 0, GetColor(255, 255, 255), "position(%5.1f,%5.1f,%5.1f)", position.x, position.y, position.z);
-		//DrawFormatString(0, 20, GetColor(255, 255, 255), "startIndex %d", startIndex);
-		//DrawFormatString(0, 40, GetColor(255, 255, 255), "timeRate %7.3f [%%]", timeRate);
-		//DrawFormatString(0, 60, GetColor(255, 255, 255), "elapsedTime %7.3f [s]", elapsedTime);
-		//DrawFormatString(0, 80, GetColor(255, 255, 255), "[R]:Restart");
-
-		//DrawFormatString(0, 100, GetColor(255, 255, 255), "start (% 6.1f, % 6.1f, % 6.1f)", start.x, start.y, start.z);
-		//DrawFormatString(0, 120, GetColor(255, 255, 255), "p2 (% 6.1f, % 6.1f, % 6.1f)", p2.x, p2.y, p2.z);
-		//DrawFormatString(0, 140, GetColor(255, 255, 255), "p3 (% 6.1f, % 6.1f, % 6.1f)", p3.x, p3.y, p3.z);
-		//DrawFormatString(0, 160, GetColor(255, 255, 255), "end (% 6.1f, % 6.1f, % 6.1f)", end.x, end.y, end.z);
-
+		// 描画処理
+		ClearDrawScreen();
+		//		DrawFormatString(0, 0, GetColor(255, 255, 255), "%d,%d", position);
+//		DrawFormatString(0, 0, GetColor(255, 255, 255), "position(%6.1f,%6.1f,%6.1f)", position.x, position.y, position.z);
+//		DrawFormatString(0, 20, GetColor(255, 255, 255), "%7.3f [s]", elapsedTime);
+//		DrawFormatString(0, 40, GetColor(255, 255, 255), "[R]:Restart");
+//		DrawFormatString(0, 60, GetColor(255, 255, 255), "p0(% 6.1f, % 6.1f, % 6.1f)", p0.x, p0.y, p0.z);
+//		DrawFormatString(0, 80, GetColor(255, 255, 255), "p1(% 6.1f, % 6.1f, % 6.1f)", p1.x, p1.y, p1.z);
+//		DrawFormatString(0, 100, GetColor(255, 255, 255), "p2(% 6.1f, % 6.1f, % 6.1f)", p2.x, p2.y, p2.z);
+		if (keys[KEY_INPUT_SPACE] == 1) {
+			DrawSphere3D(position, 5.0f, 32, GetColor(0, 100, 100), GetColor(255, 255, 255), TRUE);
+		}
+//		DrawGraph(0,200,GetColor);
 		//DrawSphere3D(position, 80.0f, 32, GetColor(255, 0, 0), GetColor(255, 255, 255), TRUE);
+//		DrawGraph(0, 0, umi, true);
+		DrawGraph(20, 300, okimono, true);
 		ScreenFlip();
 	}
 	// Dxライブラリ終了処理
 	DxLib_End();
+
 	// 正常終了
 	return 0;
 }
 
-////
-////int DrawCircle(Vector2 vec, int r, unsigned int color)
-////{
-////	return DrawCircle(static_cast<int>(vec.x), static_cast<int>(vec.y), r, color);
-////}
 //
-//int DrawSphere3D(const Vector3& CenterPos, const float r, const int DivNum,
-//	const unsigned int DifColor, const unsigned int SpcColor, const int FillFlag)
+//int DrawCircle(Vector2 vec, int r, unsigned int color)
 //{
-//	VECTOR centerPos = { CenterPos.x,CenterPos.y,CenterPos.z };
-//
-//	return DrawSphere3D(centerPos, r, DivNum, DifColor, SpcColor, FillFlag);
+//	return DrawCircle(static_cast<int>(vec.x), static_cast<int>(vec.y), r, color);
 //}
-//int DrawLine3D(const Vector3& Pos1, const Vector3& Pos2, const unsigned int Color)
-//{
-//	VECTOR p1 = { Pos1.x,Pos1.y,Pos1.z };
-//	VECTOR p2 = { Pos2.x,Pos2.y,Pos2.z };
-//
-//	return DrawLine3D(p1, p2, Color);
-//}
-//Vector3 splinePosition(const std::vector<Vector3>& points, size_t startIndex, float t)
-//{
-//	size_t n = points.size() - 2;
-//
-//	if (startIndex > n)return points[n];
-//	if (startIndex < 1)return points[1];
-//
-//	Vector3 p0 = points[startIndex - 1];
-//	Vector3 p1 = points[startIndex];
-//	Vector3 p2 = points[startIndex + 1];
-//	Vector3 p3 = points[startIndex + 2];
-//	Vector3 position = { p1 + (-p0 + p2)+
-//						(p0-p1+p2-p3)+
-//						(-p0+p1-p2+p3)};
-//
-//	return position;
-//}
+
+int DrawSphere3D(const Vector3& CenterPos, const float r, const int DivNum,
+	const unsigned int DifColor, const unsigned int SpcColor, const int FillFlag)
+{
+	VECTOR centerPos = { CenterPos.x,CenterPos.y,CenterPos.z };
+
+	return DrawSphere3D(centerPos, r, DivNum, DifColor, SpcColor, FillFlag);
+}
+int DrawLine3D(const Vector3& Pos1, const Vector3& Pos2, const unsigned int Color)
+{
+	VECTOR p1 = { Pos1.x,Pos1.y,Pos1.z };
+	VECTOR p2 = { Pos2.x,Pos2.y,Pos2.z };
+
+	return DrawLine3D(p1, p2, Color);
+}
